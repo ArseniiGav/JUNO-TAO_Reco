@@ -1,0 +1,6 @@
+__pycache__
+processed_data/*
+TAO data
+train_data/raw
+train_data/targets
+.ipynb_checkpoints
