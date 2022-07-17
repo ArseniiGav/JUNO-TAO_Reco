@@ -1,6 +1,5 @@
 __pycache__
 processed_data/*
 TAO data
-train_data/raw
-train_data/targets
+train_data
 .ipynb_checkpoints
