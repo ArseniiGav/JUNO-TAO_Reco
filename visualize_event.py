@@ -85,7 +85,7 @@ def visualize_events(
         list2 = list(lpmt_fht_array[i].round(2))
         str1 = ', '.join("nPE: " + str(list1[i]) + " FHT: " + str(list2[i]) for i in range(len(list1)))
         scatter_text = str1.split(", ")
-        trace = lambda type_of_vis_obj, colorscale, name:\
+        trace = lambda type_of_vis_obj, colorscale, name, colorbar_x, colorbar_title="", colorbar_tickprefix="1.e":\
                                  go.Scatter3d(
                                      x=lpmt_x_array[i], y=lpmt_y_array[i], z=lpmt_z_array[i],
                                      mode='markers',
@@ -94,11 +94,12 @@ def visualize_events(
                                      marker=dict(size=2.75,
                                                  color=type_of_vis_obj,
                                                  colorscale=colorscale,
+                                                 colorbar=dict(x=colorbar_x, title=colorbar_title, tickprefix=colorbar_tickprefix),
                                                  opacity=1),
                                      name=name, showlegend=True)
         if subplots:
-            fig.add_trace(trace(lpmt_s_array[i], colorscale_pe, "nHits"), row=1, col=1)
-            fig.add_trace(trace(np.log(lpmt_fht_array[i]+fht_bias), colorscale_fht, "FHT"), row=1, col=2)
+            fig.add_trace(trace(lpmt_s_array[i], colorscale_pe, "nHits", 0.45, colorbar_title="nHits", colorbar_tickprefix=""), row=1, col=1)
+            fig.add_trace(trace(np.log10(lpmt_fht_array[i]+fht_bias), colorscale_fht, "FHT", 1.01, colorbar_title="FHT"), row=1, col=2)
         else:
             fig.add_trace(trace(lpmt_s_array[i], colorscale_pe, "nHits"))
 
@@ -199,6 +200,9 @@ def visualize_events(
         )            
 
     fig.update_layout(
+      coloraxis_colorbar=dict(
+	    tickprefix='1.e'
+	),
       updatemenus=list([
         dict(
           x=0.05,
