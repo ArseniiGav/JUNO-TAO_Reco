@@ -9,6 +9,87 @@ init_notebook_mode(connected=False)
 import plotly.io as pio
 pio.templates.default = 'plotly_dark'
 
+
+def animate_event(
+    R,
+    nPEs,
+    event_pos_x,
+    event_pos_y,
+    event_pos_z,
+    event_edep,
+    event_Redep,
+):
+    theta = np.linspace(0,2*np.pi,100)
+    phi = np.linspace(0,np.pi,100)
+    x = np.outer(np.cos(theta),np.sin(phi))
+    y = np.outer(np.sin(theta),np.sin(phi))
+    z = np.outer(np.ones(100),np.cos(phi))
+        
+    fig = go.Figure(
+    frames=[
+        go.Frame(
+            data=go.Scatter3d(
+                x=lpmt_x_slice_array[k],
+                y=lpmt_y_slice_array[k],
+                z=lpmt_z_slice_array[k],
+                mode='markers',
+                text=lpmt_s_slice_array[k],
+                marker=dict(
+                    size=2.5, 
+                    color=lpmt_s_slice_array[k],
+                    colorscale=['rgb(150, 30, 70)', 'rgb(255, 200, 70)','rgb(255, 255, 100)'],
+                    opacity=1),
+                name='LPMT'),
+            name=str(k))
+        for k in range(0, len(lpmt_y_slice_array))
+        ]
+    )
+    
+    sliders=[
+        {
+            "pad": {"b": 10, "t": 60},
+            "len": 0.9,
+            "x": 0.1,
+            "y": 0,
+            "steps": [
+                {
+                    "args": [[f.name], frame_args(0)],
+                    "label": str(k),
+                    "method": "animate",
+                }
+                for k, f in enumerate(fig.frames)
+            ],
+        }
+    ]
+
+    fig.update_layout(
+        go.Layout(
+            updatemenus = [
+                {
+                    "buttons": [
+                        {
+                            "args": [None, frame_args(50)],
+                            "label": "&#9654;", # play symbol
+                            "method": "animate",
+
+                        },
+                        {
+                            "args": [[None], frame_args(0)],
+                            "label": "&#9724;", # pause symbol
+                            "method": "animate",
+                        },
+                    ],
+                    "direction": "left",
+                    "pad": {"r": 10, "t": 70},
+                    "type": "buttons",
+                    "x": 0.1,
+                    "y": 0,
+                }
+             ], sliders=sliders, scene_camera_eye=dict(x=1, y=1, z=1)
+        )
+    )
+
+
 def visualize_events(
     evtIDs,
     R,

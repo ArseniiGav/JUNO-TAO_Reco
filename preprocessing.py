@@ -8,11 +8,11 @@ import numpy as np
 bl = int(sys.argv[1])
 br = int(sys.argv[2])
 test = sys.argv[3]
-en = sys.argv[4]
 
 for j in range(bl, br):
     root_file = f"sample_elecsim-{j}.root"
-    if test:
+    if test == "True":
+        en = sys.argv[4]
         eos_path = f"/eos/juno/users/a/arsg/TAO_test/{en}MeV"
     else:
         eos_path = "/eos/juno/users/a/arsg/TAO/"
@@ -54,7 +54,7 @@ for j in range(bl, br):
     description = "Data description: \n \
     By 'hits' key: SiPMHitID,  SiPMHitT \n \
     By 'primaries' key: edep, edepX, edepY, edepZ"
-    if test:
+    if test == "True":
         np.savez_compressed(
             f"/mnt/cephfs/ml_data/TAO_detsim_J22/test/{en}MeV/detsim_" + root_file.split("-")[1][:-5] + ".npz",
             hits=raw_data,
