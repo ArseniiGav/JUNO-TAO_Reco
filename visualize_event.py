@@ -10,9 +10,18 @@ import plotly.io as pio
 pio.templates.default = 'plotly_dark'
 
 
+def frame_args(duration):
+    return {
+            "frame": {"duration": duration},
+            "mode": "immediate",
+            "fromcurrent": True,
+            "transition": {"duration": duration, "easing": "linear"},
+        }
+
 def animate_event(
-    R,
+    geometry,
     nPEs,
+    nHits,
     event_pos_x,
     event_pos_y,
     event_pos_z,
@@ -24,26 +33,39 @@ def animate_event(
     x = np.outer(np.cos(theta),np.sin(phi))
     y = np.outer(np.sin(theta),np.sin(phi))
     z = np.outer(np.ones(100),np.cos(phi))
+    R = geometry['R'][0]
+    
+    frames = []
+    
+    for k in range(len(nPEs)):
+        nPE_serie = pd.Series(nPEs[k])
+        indeces = nPE_serie[nPE_serie > 0].index
+        frames.append(
+                go.Frame(
+                    data=go.Scatter3d(
+                    x=geometry['X'][indeces] / 1000.,
+                    y=geometry['Y'][indeces] / 1000.,
+                    z=geometry['Z'][indeces] / 1000.,
+                    mode='markers',
+                    text=nPEs[k][indeces],
+                    marker=dict(
+                        size=3, 
+                        color=nPEs[k][indeces],
+                        colorscale=['rgb(150, 30, 70)', 'rgb(255, 200, 70)','rgb(255, 255, 100)'],
+                        colorbar=dict(
+                            x=0.95,
+                            title='nHits', 
+                            tickprefix='',
+                            len=1.1,
+                        ),
+                        cmin=nPEs.min(),
+                        cmax=nPEs.max(),
+                        opacity=1),
+                    name=f"Total: {nPEs[k].sum()}/{nHits}",),
+                name=str(k))
+        )
         
-    fig = go.Figure(
-    frames=[
-        go.Frame(
-            data=go.Scatter3d(
-                x=lpmt_x_slice_array[k],
-                y=lpmt_y_slice_array[k],
-                z=lpmt_z_slice_array[k],
-                mode='markers',
-                text=lpmt_s_slice_array[k],
-                marker=dict(
-                    size=2.5, 
-                    color=lpmt_s_slice_array[k],
-                    colorscale=['rgb(150, 30, 70)', 'rgb(255, 200, 70)','rgb(255, 255, 100)'],
-                    opacity=1),
-                name='LPMT'),
-            name=str(k))
-        for k in range(0, len(lpmt_y_slice_array))
-        ]
-    )
+    fig = go.Figure(frames=frames)
     
     sliders=[
         {
@@ -88,7 +110,74 @@ def animate_event(
              ], sliders=sliders, scene_camera_eye=dict(x=1, y=1, z=1)
         )
     )
+    
+    fig.add_trace(
+        go.Scatter3d(
+            x=[0],
+            y=[0],
+            z=[0],
+            mode='markers',
+            marker=dict(
+                size=0.001,
+                color='red',
+            ),
+            name='LPMT'
+        )
+    )
 
+    fig.add_trace(
+        go.Surface(
+                x=x*R*0.99,
+                y=y*R*0.99,
+                z=z*R*0.99,
+                opacity=0.3,
+                showscale=False,
+                colorscale=['rgb(2, 2, 2)', 'rgb(4, 4, 4)'],
+                name=''
+            )
+    )
+    
+    fig.add_trace(
+        go.Scatter3d(
+           x=[event_pos_x],
+           y=[event_pos_y],
+           z=[event_pos_z],
+           mode='markers',
+           text="Edep: " + str(event_edep)[:5] +\
+                " Redep: " + str(event_Redep)[:5],
+           marker=dict(
+                   size=7,
+                   color='white',  
+                   #colorscale='portland',
+                   opacity=1
+           ),
+           name='Edep = ' + str(event_edep)[:5] + " MeV",
+        )
+    )
+
+    fig.update_layout(
+        title=f"First {nPEs.shape[0] / 2} ns",
+        scene=dict(
+            xaxis=dict(
+                dtick=0.25
+            ),
+            yaxis=dict(
+                dtick=0.25
+            ),
+            zaxis=dict(
+                dtick=0.25
+            ),       
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.05,
+            xanchor="right",
+            x=1
+        )
+    )    
+    
+    fig.show()
 
 def visualize_events(
     evtIDs,
@@ -255,8 +344,8 @@ def visualize_events(
     for i in range(len(evtIDs)):
         trace = go.Surface(
                     x=x * R * 0.99,
-                    y=y * R* 0.99,
-                    z=z * R* 0.99,
+                    y=y * R * 0.99,
+                    z=z * R * 0.99,
                     opacity=0.3,
                     visible=(i == 0),
                     showscale=False,
