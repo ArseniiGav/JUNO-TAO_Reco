@@ -2,3 +2,6 @@ __pycache__
 processed_data/*
 TAO data
 .ipynb_checkpoints
+models/*
+feature_selection
+
