@@ -3,6 +3,4 @@ processed_data/*
 TAO data
 .ipynb_checkpoints
 .neptune
-models/*
-feature_selection
-
+models/fcdnn_tun
